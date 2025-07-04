@@ -1,32 +1,12 @@
 import { useState } from 'react';
-import { validateFormData, hasErrors } from '../utils/validation';
 
 const initialFormData = {
   naam: '',
-  adres: '',
-  geboortedatum: '',
-  telefoon: '',
   email: '',
-  lidmaatschap: 'vrijwillig',
-  vrijwilligeBijdrage: '',
-  opleidingsachtergrond: '',
-  studerend: '',
-  studierichting: '',
-  professie: '',
-  gepensioneerd: '',
-  vrijwilligerswerk: '',
-  politiekeErvaring: '',
-  interessegebied: '',
-  activiteiten: {
-    communicatie: false,
-    ict: false,
-    bestuurswerk: false,
-    fractielidmaatschap: false,
-    professioneleKennis: false,
-    campagne: false,
-    anders: false,
-  },
-  andereActiviteiten: '',
+  lidVanSamenwerkt: '',
+  komtNaarCafe: '',
+  telefoonnummer: '',
+  opmerkingen: ''
 };
 
 export const useForm = () => {
@@ -35,23 +15,11 @@ export const useForm = () => {
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    if (name.startsWith('activiteiten.')) {
-      const activity = name.split('.')[1];
-      setFormData((prev) => ({
-        ...prev,
-        activiteiten: {
-          ...prev.activiteiten,
-          [activity]: checked,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value,
-      }));
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
     // Clear error for this field when user starts typing
     if (errors[name]) {
@@ -63,9 +31,34 @@ export const useForm = () => {
   };
 
   const validateForm = () => {
-    const newErrors = validateFormData(formData);
+    const newErrors = {};
+    
+    if (!formData.naam.trim()) {
+      newErrors.naam = 'Naam is verplicht';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'E-mailadres is verplicht';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Geldig e-mailadres is verplicht';
+    }
+    
+    if (!formData.lidVanSamenwerkt) {
+      newErrors.lidVanSamenwerkt = 'Geef aan of u lid bent van SamenWerkt';
+    }
+    
+    if (!formData.komtNaarCafe) {
+      newErrors.komtNaarCafe = 'Geef aan of u naar het politiek café komt';
+    }
+    
+    if (!formData.telefoonnummer.trim()) {
+      newErrors.telefoonnummer = 'Telefoonnummer is verplicht';
+    } else if (!/^\d{8,}$/.test(formData.telefoonnummer.replace(/\s/g, ''))) {
+      newErrors.telefoonnummer = 'Geldig telefoonnummer is verplicht (minimaal 8 cijfers)';
+    }
+    
     setErrors(newErrors);
-    return !hasErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const resetForm = () => {

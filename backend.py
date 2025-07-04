@@ -24,7 +24,7 @@ import uvicorn
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="SamenWerkt Membership API", version="1.0.0")
+app = FastAPI(title="SamenWerkt Aanmelding PolitiekCafe API", version="1.0.0")
 
 # Enable CORS for localhost development
 app.add_middleware(
@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 # Database setup
-DB_PATH = Path(__file__).parent / "membership.db"
+DB_PATH = Path(__file__).parent / "politekcafe.db"
 
 def init_database():
     """Initialize SQLite database with membership and cafe tables"""

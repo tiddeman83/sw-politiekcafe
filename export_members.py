@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-DB_PATH = Path(__file__).parent / "membership.db"
+DB_PATH = Path(__file__).parent / "politekcafe.db"
 EXPORT_EMAIL = "tijmenbaas83@outlook.com"
 FROM_EMAIL = "info@samenwerktwbd.nl"
 

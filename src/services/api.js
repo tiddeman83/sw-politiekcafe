@@ -5,7 +5,7 @@ const API_BASE_URL =
 
 export const submitForm = async (formData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/submit`, {
+    const response = await fetch(`${API_BASE_URL}/cafe`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -15,7 +15,7 @@ export const submitForm = async (formData) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Server error: ${response.status}`);
+      throw new Error(errorData.detail || `Server error: ${response.status}`);
     }
 
     return await response.json();

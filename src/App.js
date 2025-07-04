@@ -18,73 +18,17 @@ import {
 } from '@mui/material';
 import {
   CoffeeTwoTone as CafeIcon,
-  Send as SendIcon,
-  CheckCircle as CheckIcon
+  Send as SendIcon
 } from '@mui/icons-material';
 import Header from './components/Header';
 import SuccessModal from './components/SuccessModal';
+import { useForm } from './hooks/useForm';
+import { submitForm } from './services/api';
 
 function App() {
-  const [formData, setFormData] = useState({
-    naam: '',
-    email: '',
-    lidVanSamenwerkt: '',
-    komtNaarCafe: '',
-    telefoonnummer: '',
-    opmerkingen: ''
-  });
-  
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { formData, isSubmitting, setIsSubmitting, errors, handleChange, validateForm, resetForm } = useForm();
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.naam.trim()) {
-      newErrors.naam = 'Naam is verplicht';
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = 'E-mailadres is verplicht';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Geldig e-mailadres is verplicht';
-    }
-    
-    if (!formData.lidVanSamenwerkt) {
-      newErrors.lidVanSamenwerkt = 'Geef aan of u lid bent van SamenWerkt';
-    }
-    
-    if (!formData.komtNaarCafe) {
-      newErrors.komtNaarCafe = 'Geef aan of u naar het politiek café komt';
-    }
-    
-    if (!formData.telefoonnummer.trim()) {
-      newErrors.telefoonnummer = 'Telefoonnummer is verplicht';
-    } else if (!/^\d{8,}$/.test(formData.telefoonnummer.replace(/\s/g, ''))) {
-      newErrors.telefoonnummer = 'Geldig telefoonnummer is verplicht (minimaal 8 cijfers)';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,40 +45,16 @@ function App() {
     setSubmitStatus({ type: '', message: '' });
 
     try {
-      const response = await fetch('http://localhost:8521/api/cafe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Er is een fout opgetreden');
-      }
-
-      const result = await response.json();
+      await submitForm(formData);
       
-      if (result.success) {
-        setSubmitStatus({ type: '', message: '' });
-        setShowSuccessModal(true);
-        
-        // Reset form
-        setTimeout(() => {
-          setFormData({
-            naam: '',
-            email: '',
-            lidVanSamenwerkt: '',
-            komtNaarCafe: '',
-            telefoonnummer: '',
-            opmerkingen: ''
-          });
-          setErrors({});
-        }, 100);
-      } else {
-        throw new Error(result.message || 'Er is een fout opgetreden');
-      }
+      // Clear any error states and show success modal
+      setSubmitStatus({ type: '', message: '' });
+      setShowSuccessModal(true);
+      
+      // Reset form after a small delay to ensure state is clean
+      setTimeout(() => {
+        resetForm();
+      }, 100);
       
     } catch (error) {
       console.error('Submission error:', error);
