@@ -1,0 +1,218 @@
+body {
+  margin: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Additional global styles for better UX */
+* {
+  box-sizing: border-box;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced form helper text */
+.MuiFormHelperText-root.Mui-error {
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form animations */
+.form-section {
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.form-section:nth-child(1) { animation-delay: 0.1s; }
+.form-section:nth-child(2) { animation-delay: 0.2s; }
+.form-section:nth-child(3) { animation-delay: 0.3s; }
+.form-section:nth-child(4) { animation-delay: 0.4s; }
+
+/* Input focus effects */
+.MuiTextField-root .MuiOutlinedInput-root.Mui-focused {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+/* Button hover effects */
+.MuiButton-root {
+  position: relative;
+  overflow: hidden;
+}
+
+.MuiButton-root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.MuiButton-root:hover::before {
+  left: 100%;
+}
+
+/* Radio and checkbox enhancements */
+.MuiRadio-root, .MuiCheckbox-root {
+  transition: all 0.3s ease;
+}
+
+.MuiRadio-root:hover, .MuiCheckbox-root:hover {
+  background-color: rgba(229, 57, 53, 0.04);
+  transform: scale(1.1);
+}
+
+/* Paper elevation animation */
+.MuiPaper-root {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.MuiPaper-root:hover {
+  transform: translateY(-2px);
+}
+
+/* Alert styling enhancement */
+.MuiAlert-root {
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Loading spinner custom color */
+.MuiCircularProgress-root {
+  color: currentColor !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #e53935, #4caf50);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #d32f2f, #388e3c);
+}
+
+/* Selection color */
+::selection {
+  background: rgba(229, 57, 53, 0.3);
+  color: #2c3e50;
+}
+
+/* Focus visible */
+.MuiButton-root:focus-visible {
+  outline: 2px solid #4caf50;
+  outline-offset: 2px;
+}
+
+/* Form field width adjustments for different screen sizes */
+@media (max-width: 600px) {
+  /* On mobile, use 95% width instead of 60vw for better space usage */
+  .form-section {
+    margin-bottom: 20px;
+  }
+  
+  .MuiContainer-root {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  /* Override 60vw constraint on mobile */
+  [style*="maxWidth: 60vw"] {
+    max-width: 95% !important;
+  }
+  
+  /* Adjust text field padding on mobile */
+  .MuiOutlinedInput-input {
+    padding: 16px 14px !important;
+    fontSize: 1rem !important;
+  }
+  
+  .MuiInputLabel-root {
+    fontSize: 1rem !important;
+  }
+  
+  .MuiFormHelperText-root {
+    fontSize: 0.875rem !important;
+  }
+  
+  /* Stack flex items on mobile */
+  [style*="display: flex"] {
+    flex-direction: column !important;
+  }
+  
+  [style*="flex: 1"] {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+}
+
+/* Tablet responsive adjustments */
+@media (max-width: 900px) {
+  /* On tablet, use 80% width instead of 60vw */
+  [style*="maxWidth: 60vw"] {
+    max-width: 80% !important;
+  }
+  
+  .MuiOutlinedInput-input {
+    padding: 17px 15px !important;
+    fontSize: 1.05rem !important;
+  }
+}
+
+/* Large screens - ensure 60vw doesn't get too wide */
+@media (min-width: 1400px) {
+  [style*="maxWidth: 60vw"] {
+    max-width: 800px !important;
+  }
+}
