@@ -39,27 +39,9 @@ app.add_middleware(
 DB_PATH = Path(__file__).parent / "politekcafe.db"
 
 def init_database():
-    """Initialize SQLite database with membership and cafe tables"""
+    """Initialize SQLite database with cafe table"""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS memberships (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            naam TEXT NOT NULL,
-            adres TEXT NOT NULL,
-            geboortedatum TEXT NOT NULL,
-            telefoon TEXT NOT NULL,
-            email TEXT NOT NULL,
-            lidmaatschap TEXT NOT NULL,
-            opleiding TEXT,
-            beroep TEXT,
-            politieke_ervaring TEXT,
-            activiteiten TEXT,
-            timestamp TEXT NOT NULL,
-            submission_data TEXT NOT NULL
-        )
-    ''')
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS cafe_registrations (
@@ -81,46 +63,6 @@ def init_database():
 # Initialize database on startup
 init_database()
 
-class MembershipForm(BaseModel):
-    """Pydantic model for membership form validation"""
-    naam: str
-    adres: str
-    geboortedatum: str
-    telefoon: str
-    email: EmailStr
-    lidmaatschap: str
-    opleiding: Optional[str] = None
-    beroep: Optional[str] = None
-    politieke_ervaring: Optional[str] = None
-    activiteiten: Optional[Dict] = None
-    
-    @field_validator('naam')
-    @classmethod
-    def validate_naam(cls, v):
-        if not v or len(v.strip()) < 2:
-            raise ValueError('Naam is verplicht en moet minimaal 2 karakters bevatten.')
-        return v.strip()
-    
-    @field_validator('adres')
-    @classmethod
-    def validate_adres(cls, v):
-        if not v or len(v.strip()) < 5:
-            raise ValueError('Adres is verplicht en moet minimaal 5 karakters bevatten.')
-        return v.strip()
-    
-    @field_validator('telefoon')
-    @classmethod
-    def validate_telefoon(cls, v):
-        if not v or len(v.strip()) < 8:
-            raise ValueError('Telefoonnummer is verplicht en moet minimaal 8 cijfers bevatten.')
-        return v.strip()
-    
-    @field_validator('lidmaatschap')
-    @classmethod
-    def validate_lidmaatschap(cls, v):
-        if not v:
-            raise ValueError('Lidmaatschapstype is verplicht.')
-        return v
 
 class CafeForm(BaseModel):
     """Pydantic model for political café form validation"""
@@ -159,46 +101,6 @@ class CafeForm(BaseModel):
             raise ValueError('Geef aan of u naar het politiek café komt.')
         return v
 
-def store_submission(form_data: dict) -> bool:
-    """Store form submission in SQLite database"""
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        
-        # Extract main fields
-        naam = form_data.get('naam', '')
-        adres = form_data.get('adres', '')
-        geboortedatum = form_data.get('geboortedatum', '')
-        telefoon = form_data.get('telefoon', '')
-        email = form_data.get('email', '')
-        lidmaatschap = form_data.get('lidmaatschap', '')
-        opleiding = form_data.get('opleiding', '')
-        beroep = form_data.get('beroep', '')
-        politieke_ervaring = form_data.get('politieke_ervaring', '')
-        activiteiten = json.dumps(form_data.get('activiteiten', {}))
-        timestamp = datetime.now().isoformat()
-        submission_data = json.dumps(form_data)
-        
-        cursor.execute('''
-            INSERT INTO memberships (
-                naam, adres, geboortedatum, telefoon, email, lidmaatschap,
-                opleiding, beroep, politieke_ervaring, activiteiten,
-                timestamp, submission_data
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            naam, adres, geboortedatum, telefoon, email, lidmaatschap,
-            opleiding, beroep, politieke_ervaring, activiteiten,
-            timestamp, submission_data
-        ))
-        
-        conn.commit()
-        conn.close()
-        logger.info(f"Stored submission for {naam}")
-        return True
-        
-    except Exception as e:
-        logger.error(f"Error storing submission: {e}")
-        return False
 
 def store_cafe_submission(form_data: dict) -> bool:
     """Store café form submission in SQLite database"""
@@ -470,69 +372,6 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     return response
 
-@app.post("/api/submit")
-async def submit_form(form: MembershipForm):
-    """Handle form submission - store in database and send email"""
-    try:
-        form_data = form.dict()
-        
-        # Add metadata
-        form_data['timestamp'] = datetime.now().isoformat()
-        form_data['id'] = str(int(datetime.now().timestamp() * 1000))
-        
-        # Store in database
-        if not store_submission(form_data):
-            raise HTTPException(
-                status_code=500,
-                detail="Fout bij opslaan van gegevens."
-            )
-        
-        # Send notification email to organization
-        notification_sent = send_notification_email(form_data)
-        
-        # Send confirmation email to form sender
-        confirmation_sent = send_confirmation_email(form_data)
-        
-        if notification_sent and confirmation_sent:
-            return {
-                "success": True,
-                "message": "Formulier succesvol verzonden! U ontvangt een bevestigingsmail."
-            }
-        elif notification_sent:
-            return {
-                "success": True,
-                "message": "Formulier opgeslagen en melding verstuurd. Bevestigingsmail kon niet worden verzonden.",
-                "warning": "Bevestigingsmail mislukt"
-            }
-        elif confirmation_sent:
-            return {
-                "success": True,
-                "message": "Formulier opgeslagen en bevestigingsmail verzonden. Interne melding mislukt.",
-                "warning": "Interne melding mislukt"
-            }
-        else:
-            return {
-                "success": True,
-                "message": "Formulier opgeslagen, maar e-mails konden niet worden verstuurd. We nemen contact met u op.",
-                "warning": "E-mail verzending mislukt"
-            }
-            
-    except ValueError as e:
-        # Validation errors
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "success": False,
-                "message": "Validatiefout in formuliergegevens.",
-                "errors": [str(e)]
-            }
-        )
-    except Exception as e:
-        logger.error(f"Submission error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail="Er is een onverwachte fout opgetreden bij het verwerken van uw aanmelding."
-        )
 
 @app.post("/api/cafe")
 async def submit_cafe_form(form: CafeForm):
