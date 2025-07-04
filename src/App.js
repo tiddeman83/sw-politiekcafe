@@ -101,7 +101,7 @@ function App() {
     setSubmitStatus({ type: '', message: '' });
 
     try {
-      const response = await fetch('http://localhost:3002/api/cafe', {
+      const response = await fetch('http://localhost:8521/api/cafe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
